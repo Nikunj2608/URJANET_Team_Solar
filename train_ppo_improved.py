@@ -660,12 +660,12 @@ def main():
     metrics = train_improved(
         env=env,
         agent=agent,
-        num_episodes=1000,  # Train longer on more data
+        num_episodes=10000,  # 🚀 INCREASED: 10x more training (was 1000)
         log_dir=log_dir,
         model_dir=model_dir,
         eval_interval=50,
         save_interval=100,
-        safety_weight_multiplier=3.0  # 3x safety penalty
+        safety_weight_multiplier=1.0  # ⚙️ REDUCED: Less cautious (was 3.0)
     )
     
     print(f"\n✓ Logs saved to: {log_dir}")

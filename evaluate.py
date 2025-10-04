@@ -386,10 +386,21 @@ def main():
     )
     
     # Try to load best model
-    model_path = "models/best_model.pt"
-    if os.path.exists(model_path):
+    # First try timestamped directory, then fallback to default
+    import glob
+    model_dirs = sorted(glob.glob("models/ppo_improved_*"), reverse=True)
+    
+    model_path = None
+    if model_dirs:
+        # Use most recent trained model
+        model_path = os.path.join(model_dirs[0], "best_model.pt")
+    
+    if model_path and os.path.exists(model_path):
         agent.load(model_path)
-        print(f"Loaded model from {model_path}")
+        print(f"✓ Loaded trained model from {model_path}")
+    elif os.path.exists("models/best_model.pt"):
+        agent.load("models/best_model.pt")
+        print(f"✓ Loaded model from models/best_model.pt")
     else:
         print("WARNING: No trained model found. Using random initialization.")
     
@@ -412,8 +423,8 @@ def main():
     # Plot detailed trajectory
     plot_evaluation_results(trajectories, 'evaluation/rl_trajectory.png')
     
-    # Save metrics
-    pd.DataFrame(metrics).to_csv('evaluation/rl_detailed_metrics.csv', index=False)
+    # Save metrics (only save summary, not raw metrics with different lengths)
+    pd.DataFrame([summary]).to_csv('evaluation/rl_summary_metrics.csv', index=False)
     
     print("\n" + "="*60)
     print("Evaluation Complete!")

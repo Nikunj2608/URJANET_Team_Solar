@@ -131,6 +131,7 @@ class MicrogridEMSEnv(gym.Env):
         # Episode state
         self.current_step = 0
         self.episode_start_idx = 0
+        self.max_episode_steps = STEPS_PER_EPISODE  # Default, can be overridden
         self.battery_socs = [bat.initial_soc for bat in BATTERIES]
         self.battery_soh = [bat.soh_initial for bat in BATTERIES]
         self.battery_temps = [bat.temperature_nominal for bat in BATTERIES]
@@ -142,8 +143,13 @@ class MicrogridEMSEnv(gym.Env):
         # Explanation buffer
         self.last_explanation = ""
         
-    def reset(self, episode_start_idx: Optional[int] = None) -> np.ndarray:
-        """Reset environment for new episode"""
+    def reset(self, episode_start_idx: Optional[int] = None, max_steps: Optional[int] = None) -> np.ndarray:
+        """Reset environment for new episode
+        
+        Args:
+            episode_start_idx: Starting index in data profiles (None = random)
+            max_steps: Maximum steps for this episode (None = use default STEPS_PER_EPISODE)
+        """
         # Determine episode start
         if episode_start_idx is not None:
             self.episode_start_idx = episode_start_idx
@@ -151,6 +157,14 @@ class MicrogridEMSEnv(gym.Env):
             # Random start (ensure we have enough data)
             max_start = len(self.pv_profile) - STEPS_PER_EPISODE - RENEWABLE.forecast_horizon_steps
             self.episode_start_idx = self.rng.randint(0, max_start)
+        
+        # Set max steps for this episode
+        if max_steps is not None:
+            # Calculate available steps based on data length
+            available_steps = len(self.pv_profile) - self.episode_start_idx - RENEWABLE.forecast_horizon_steps
+            self.max_episode_steps = min(max_steps, available_steps)
+        else:
+            self.max_episode_steps = STEPS_PER_EPISODE
         
         self.current_step = 0
         
@@ -179,7 +193,7 @@ class MicrogridEMSEnv(gym.Env):
         
         # Generate EV arrival pattern for this episode
         if self.enable_evs:
-            self.ev_arrival_pattern = self.ev_simulator.generate_arrival_pattern(STEPS_PER_EPISODE)
+            self.ev_arrival_pattern = self.ev_simulator.generate_arrival_pattern(self.max_episode_steps)
         
         return self._get_observation()
     
@@ -226,7 +240,7 @@ class MicrogridEMSEnv(gym.Env):
         
         # Advance time
         self.current_step += 1
-        done = (self.current_step >= STEPS_PER_EPISODE)
+        done = (self.current_step >= self.max_episode_steps)
         
         # Get next observation
         obs = self._get_observation()
@@ -469,8 +483,14 @@ class MicrogridEMSEnv(gym.Env):
         
         # Calculate cost
         price = self._get_grid_price(abs_step)
-        import_cost = grid_import_kw * HOURS_PER_STEP * price
-        export_revenue = grid_export_kw * HOURS_PER_STEP * price * REWARD.revenue_export_multiplier
+        # Handle infinite prices (grid unavailable)
+        if np.isinf(price) or np.isnan(price):
+            # Grid unavailable - no import/export costs
+            import_cost = 0.0
+            export_revenue = 0.0
+        else:
+            import_cost = grid_import_kw * HOURS_PER_STEP * price
+            export_revenue = grid_export_kw * HOURS_PER_STEP * price * REWARD.revenue_export_multiplier
         energy_cost = import_cost - export_revenue
         
         # Calculate emissions
@@ -530,7 +550,10 @@ class MicrogridEMSEnv(gym.Env):
         pv_cols = [col for col in self.pv_profile.columns if 'pv' in col.lower()]
         pv_total = self.pv_profile.iloc[abs_step][pv_cols].sum() if pv_cols else 0.0
         
-        if add_noise:
+        # Ensure non-negative (handle bad sensor data)
+        pv_total = max(0.0, float(pv_total))
+        
+        if add_noise and pv_total > 0:
             noise = self.rng.normal(0, self.forecast_noise_std * pv_total)
             pv_total = max(0, pv_total + noise)
         
@@ -544,7 +567,10 @@ class MicrogridEMSEnv(gym.Env):
         wt_cols = [col for col in self.wt_profile.columns if 'wt' in col.lower()]
         wt_total = self.wt_profile.iloc[abs_step][wt_cols].sum() if wt_cols else 0.0
         
-        if add_noise:
+        # Ensure non-negative (handle bad sensor data)
+        wt_total = max(0.0, float(wt_total))
+        
+        if add_noise and wt_total > 0:
             noise = self.rng.normal(0, self.forecast_noise_std * wt_total)
             wt_total = max(0, wt_total + noise)
         
