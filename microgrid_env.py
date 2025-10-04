@@ -14,6 +14,7 @@ import numpy as np
 import pandas as pd
 from typing import Dict, Tuple, Optional, List
 from dataclasses import asdict
+from datetime import datetime
 
 from env_config import (
     EPISODE_HOURS, STEPS_PER_EPISODE, HOURS_PER_STEP,
@@ -23,6 +24,7 @@ from env_config import (
 from battery_degradation import BatteryDegradationModel, BatteryThermalModel
 from ev_simulator import EVFleetSimulator
 from safety_supervisor import SafetySupervisor
+from anomaly_detection import AnomalyDetectionSystem
 
 
 class MicrogridEMSEnv(gym.Env):
@@ -101,6 +103,30 @@ class MicrogridEMSEnv(gym.Env):
         ]
         self.ev_simulator = EVFleetSimulator(config=EV_FLEET, random_seed=random_seed)
         self.safety_supervisor = SafetySupervisor(config=SAFETY)
+        
+        # Initialize anomaly detection system
+        self.anomaly_detection = AnomalyDetectionSystem()
+        
+        # Register components for monitoring
+        for i, battery_config in enumerate(BATTERIES):
+            self.anomaly_detection.register_battery(
+                battery_id=battery_config.name,
+                capacity_kwh=battery_config.capacity_kwh,
+                cycle_life=battery_config.cycle_life
+            )
+        
+        # Register Solar PV systems
+        self.anomaly_detection.register_solar_pv(
+            pv_id="PV_System",
+            nominal_capacity_kw=RENEWABLE.pv_total_capacity_kw
+        )
+        
+        # Register EV chargers
+        for charger in EV_CHARGERS:
+            self.anomaly_detection.register_ev_charger(
+                charger_id=charger.name,
+                max_power_kw=charger.max_power_kw
+            )
         
         # Episode state
         self.current_step = 0
@@ -190,6 +216,9 @@ class MicrogridEMSEnv(gym.Env):
         # Update EV fleet
         if self.enable_evs:
             self.ev_simulator.step(self.current_step, STEPS_PER_EPISODE, self.ev_arrival_pattern)
+        
+        # Update anomaly detection system
+        self.update_anomaly_detection(step_info)
         
         # Generate explanation
         if EXPLAINABILITY.enable_explanations:
@@ -582,6 +611,86 @@ class MicrogridEMSEnv(gym.Env):
             'inverter_temperature': np.mean(self.battery_temps) + 10,  # Simplified
             'grid_voltage_deviation': 0.0
         }
+    
+    def update_anomaly_detection(self, step_info: Dict):
+        """Update anomaly detection system with current state"""
+        abs_step = self.episode_start_idx + self.current_step
+        
+        # Update battery monitors
+        for i, battery_config in enumerate(BATTERIES):
+            self.anomaly_detection.update_component_state(
+                component_id=battery_config.name,
+                soc=self.battery_socs[i] * 100.0,  # Convert to percentage
+                soh=self.battery_soh[i] * 100.0,
+                temperature=self.battery_temps[i],
+                power_kw=step_info.get(f'battery_{i}_power_kw', 0.0),
+                timestep_hours=HOURS_PER_STEP
+            )
+        
+        # Update PV monitor
+        pv_power = self._get_pv_generation(abs_step)
+        pv_irradiance = self._estimate_irradiance(abs_step)
+        self.anomaly_detection.update_component_state(
+            component_id="PV_System",
+            power_output_kw=pv_power,
+            irradiance=pv_irradiance,
+            ambient_temp=25.0,  # Simplified - could be from weather data
+            panel_temp=35.0
+        )
+        
+        # Update EV charger monitors
+        if self.enable_evs:
+            ev_state = self.ev_simulator.get_fleet_state()
+            total_ev_charging = step_info.get('ev_charging_kw', 0.0)
+            for charger in EV_CHARGERS:
+                # Distribute charging across chargers
+                charger_power = total_ev_charging / len(EV_CHARGERS)
+                self.anomaly_detection.update_component_state(
+                    component_id=charger.name,
+                    power_output_kw=charger_power,
+                    efficiency=charger.efficiency * 100.0,
+                    temperature=30.0,
+                    fault_status=False
+                )
+    
+    def _estimate_irradiance(self, abs_step: int) -> float:
+        """Estimate solar irradiance based on PV output"""
+        pv_power = self._get_pv_generation(abs_step)
+        # Assuming 20% efficiency: 1000 W/m² → 200 W/m² power
+        # Reverse calculate approximate irradiance
+        if pv_power > 0:
+            capacity_factor = pv_power / RENEWABLE.pv_total_capacity_kw
+            irradiance = capacity_factor * 1000.0  # W/m²
+            return max(0, min(1200, irradiance))
+        return 0.0
+    
+    def get_anomaly_report(self) -> Dict:
+        """Get comprehensive anomaly detection and predictive maintenance report"""
+        # Detect all anomalies
+        anomalies = self.anomaly_detection.detect_all_anomalies()
+        
+        # Generate maintenance recommendations
+        recommendations = self.anomaly_detection.generate_maintenance_recommendations()
+        
+        # Get diagnostic insights
+        insights = self.anomaly_detection.generate_diagnostic_insights()
+        
+        # Get full monitoring report
+        report = self.anomaly_detection.get_monitoring_report()
+        
+        return report
+    
+    def get_health_indices(self) -> Dict:
+        """Get health indices for all components"""
+        return self.anomaly_detection.get_all_health_indices()
+    
+    def get_system_health_summary(self) -> Dict:
+        """Get system-wide health summary"""
+        return self.anomaly_detection.get_system_health_summary()
+    
+    def get_actionable_alerts(self) -> List:
+        """Get actionable alerts with recommended actions"""
+        return self.anomaly_detection.get_actionable_alerts()
     
     def _generate_explanation(self, actions: Dict, step_info: Dict) -> str:
         """Generate human-readable explanation of actions"""

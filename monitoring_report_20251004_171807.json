@@ -1,0 +1,53 @@
+{
+  "timestamp": "2025-10-04T17:18:07.728468",
+  "system_summary": {
+    "overall_health": 99.99808688206997,
+    "components_monitored": 6,
+    "critical_components": 0,
+    "warning_components": 0,
+    "total_anomalies": 0,
+    "critical_anomalies": 0,
+    "active_recommendations": 0
+  },
+  "health_indices": {
+    "Battery_5": {
+      "overall_health": 99.99416180522613,
+      "performance_index": 100.0,
+      "reliability_index": 100.0,
+      "degradation_rate": 0.05838194773872374
+    },
+    "Battery_10": {
+      "overall_health": 99.99435948719363,
+      "performance_index": 100.0,
+      "reliability_index": 100.0,
+      "degradation_rate": 0.05640512806365905
+    },
+    "PV_System": {
+      "overall_health": 100.0,
+      "performance_index": 100.0,
+      "reliability_index": 100.0,
+      "degradation_rate": 0.0
+    },
+    "Charger_1": {
+      "overall_health": 100.0,
+      "performance_index": 100.0,
+      "reliability_index": 100.0,
+      "degradation_rate": 0.0
+    },
+    "Charger_2": {
+      "overall_health": 100.0,
+      "performance_index": 100.0,
+      "reliability_index": 100.0,
+      "degradation_rate": 0.0
+    },
+    "Charger_3": {
+      "overall_health": 100.0,
+      "performance_index": 100.0,
+      "reliability_index": 100.0,
+      "degradation_rate": 0.0
+    }
+  },
+  "active_alerts": [],
+  "maintenance_recommendations": [],
+  "diagnostic_insights": []
+}
