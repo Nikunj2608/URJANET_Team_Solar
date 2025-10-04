@@ -1,0 +1,46 @@
+{
+  "test_run": {
+    "start_time": "2025-10-04T17:46:47.436182",
+    "end_time": "2025-10-04T17:48:35.055451",
+    "duration_seconds": 107.619269,
+    "duration_formatted": "1m 47s"
+  },
+  "overall_statistics": {
+    "total_tests": 29,
+    "total_passed": 20,
+    "total_failed": 9,
+    "total_critical_failures": 0,
+    "success_rate": 68.96551724137932
+  },
+  "suite_results": {
+    "edge_cases": {
+      "status": "completed",
+      "total_tests": 7,
+      "passed": 7,
+      "failed": 0,
+      "results_dir": "results\\edge_cases"
+    },
+    "extreme_conditions": {
+      "status": "completed",
+      "total_tests": 8,
+      "passed": 4,
+      "failed": 4,
+      "critical_failures": 0,
+      "results_dir": "results\\extreme_conditions"
+    },
+    "real_world_scenarios": {
+      "status": "completed",
+      "total_tests": 9,
+      "passed": 4,
+      "failed": 5,
+      "results_dir": "results\\real_world"
+    },
+    "performance": {
+      "status": "completed",
+      "total_tests": 5,
+      "passed": 5,
+      "failed": 0,
+      "results_dir": "results\\performance"
+    }
+  }
+}

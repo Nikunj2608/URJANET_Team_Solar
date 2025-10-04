@@ -1,0 +1,137 @@
+{
+  "test_suite": "Performance",
+  "system_info": {
+    "cpu_count": 24,
+    "total_memory_gb": 15.730339050292969,
+    "python_version": "3.12.5 (tags/v3.12.5:ff3bc82, Aug  6 2024, 20:45:27) [MSC v.1940 64 bit (AMD64)]"
+  },
+  "timestamp": "2025-10-04T17:48:35.052438",
+  "total_tests": 5,
+  "passed": 5,
+  "failed": 0,
+  "results": [
+    {
+      "test_number": 1,
+      "test_name": "Execution Speed Benchmark",
+      "passed": true,
+      "results": [
+        {
+          "episode_length": 96,
+          "duration_seconds": 0.5769204000243917,
+          "steps_per_second": 166.40077209254727,
+          "real_time_ratio": 41.60019302313682,
+          "meets_real_time": true
+        },
+        {
+          "episode_length": 192,
+          "duration_seconds": 0.6002656000200659,
+          "steps_per_second": 319.858409333438,
+          "real_time_ratio": 79.9646023333595,
+          "meets_real_time": true
+        },
+        {
+          "episode_length": 384,
+          "duration_seconds": 0.6923747999826446,
+          "steps_per_second": 554.6129062028623,
+          "real_time_ratio": 138.65322655071557,
+          "meets_real_time": true
+        },
+        {
+          "episode_length": 672,
+          "duration_seconds": 0.6135236999834888,
+          "steps_per_second": 1095.3122104624238,
+          "real_time_ratio": 273.82805261560594,
+          "meets_real_time": true
+        }
+      ],
+      "timestamp": "2025-10-04T17:47:10.389535"
+    },
+    {
+      "test_number": 2,
+      "test_name": "Memory Usage & Leak Test",
+      "passed": true,
+      "initial_memory_mb": 113.18359375,
+      "final_memory_mb": 112.65234375,
+      "total_growth_mb": -0.5390625,
+      "growth_per_episode_mb": -0.05390625,
+      "peak_memory_mb": 0.2885246276855469,
+      "timestamp": "2025-10-04T17:47:27.635014"
+    },
+    {
+      "test_number": 3,
+      "test_name": "Real-Time Constraints Test",
+      "passed": "True",
+      "avg_step_time_ms": 5.984053123635628,
+      "max_step_time_ms": 16.12430001841858,
+      "p95_step_time_ms": 11.337400006595999,
+      "p99_step_time_ms": 13.965710005140858,
+      "real_time_limit_s": 900.0,
+      "margin_of_safety": 55816.37646111407,
+      "timestamp": "2025-10-04T17:47:28.220708"
+    },
+    {
+      "test_number": 4,
+      "test_name": "Concurrent Environments Test",
+      "passed": true,
+      "results": [
+        {
+          "num_environments": 2,
+          "duration_seconds": 1.189795900019817,
+          "memory_used_mb": 0.3125,
+          "memory_per_env_mb": 0.15625,
+          "success_count": 2,
+          "all_success": true
+        },
+        {
+          "num_environments": 4,
+          "duration_seconds": 2.5831270999624394,
+          "memory_used_mb": 0.32421875,
+          "memory_per_env_mb": 0.0810546875,
+          "success_count": 4,
+          "all_success": true
+        },
+        {
+          "num_environments": 8,
+          "duration_seconds": 6.034707400016487,
+          "memory_used_mb": 0.75390625,
+          "memory_per_env_mb": 0.09423828125,
+          "success_count": 8,
+          "all_success": true
+        }
+      ],
+      "timestamp": "2025-10-04T17:47:38.030378"
+    },
+    {
+      "test_number": 5,
+      "test_name": "Scalability Test",
+      "passed": true,
+      "results": [
+        {
+          "duration_label": "1 Week",
+          "steps": 672,
+          "completed_steps": 672,
+          "duration_seconds": 5.42197689996101,
+          "memory_used_mb": 0.00390625,
+          "success": true
+        },
+        {
+          "duration_label": "2 Weeks",
+          "steps": 1344,
+          "completed_steps": 1344,
+          "duration_seconds": 11.520680500019807,
+          "memory_used_mb": -0.0546875,
+          "success": true
+        },
+        {
+          "duration_label": "1 Month",
+          "steps": 2880,
+          "completed_steps": 2880,
+          "duration_seconds": 40.068175000022165,
+          "memory_used_mb": 0.01953125,
+          "success": true
+        }
+      ],
+      "timestamp": "2025-10-04T17:48:35.052438"
+    }
+  ]
+}

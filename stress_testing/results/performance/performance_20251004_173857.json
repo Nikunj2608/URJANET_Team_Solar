@@ -1,0 +1,137 @@
+{
+  "test_suite": "Performance",
+  "system_info": {
+    "cpu_count": 24,
+    "total_memory_gb": 15.730339050292969,
+    "python_version": "3.12.5 (tags/v3.12.5:ff3bc82, Aug  6 2024, 20:45:27) [MSC v.1940 64 bit (AMD64)]"
+  },
+  "timestamp": "2025-10-04T17:38:57.948405",
+  "total_tests": 5,
+  "passed": 4,
+  "failed": 1,
+  "results": [
+    {
+      "test_number": 1,
+      "test_name": "Execution Speed Benchmark",
+      "passed": true,
+      "results": [
+        {
+          "episode_length": 96,
+          "duration_seconds": 0.4610450000036508,
+          "steps_per_second": 208.2226246879151,
+          "real_time_ratio": 52.055656171978775,
+          "meets_real_time": true
+        },
+        {
+          "episode_length": 192,
+          "duration_seconds": 0.4631423999671824,
+          "steps_per_second": 414.55932346855917,
+          "real_time_ratio": 103.63983086713979,
+          "meets_real_time": true
+        },
+        {
+          "episode_length": 384,
+          "duration_seconds": 0.4711752000148408,
+          "steps_per_second": 814.9834710908066,
+          "real_time_ratio": 203.74586777270164,
+          "meets_real_time": true
+        },
+        {
+          "episode_length": 672,
+          "duration_seconds": 0.45632699999259785,
+          "steps_per_second": 1472.628181130857,
+          "real_time_ratio": 368.15704528271425,
+          "meets_real_time": true
+        }
+      ],
+      "timestamp": "2025-10-04T17:38:33.534627"
+    },
+    {
+      "test_number": 2,
+      "test_name": "Memory Usage & Leak Test",
+      "passed": true,
+      "initial_memory_mb": 113.41015625,
+      "final_memory_mb": 113.4375,
+      "total_growth_mb": 0.02734375,
+      "growth_per_episode_mb": 0.002734375,
+      "peak_memory_mb": 0.2875652313232422,
+      "timestamp": "2025-10-04T17:38:48.814229"
+    },
+    {
+      "test_number": 3,
+      "test_name": "Real-Time Constraints Test",
+      "passed": "True",
+      "avg_step_time_ms": 4.61967083416918,
+      "max_step_time_ms": 6.415500014554709,
+      "p95_step_time_ms": 5.6624250137247145,
+      "p99_step_time_ms": 6.33189998625312,
+      "real_time_limit_s": 900.0,
+      "margin_of_safety": 140285.2463499632,
+      "timestamp": "2025-10-04T17:38:49.277382"
+    },
+    {
+      "test_number": 4,
+      "test_name": "Concurrent Environments Test",
+      "passed": true,
+      "results": [
+        {
+          "num_environments": 2,
+          "duration_seconds": 0.9990320999640971,
+          "memory_used_mb": 0.3671875,
+          "memory_per_env_mb": 0.18359375,
+          "success_count": 2,
+          "all_success": true
+        },
+        {
+          "num_environments": 4,
+          "duration_seconds": 2.047348200052511,
+          "memory_used_mb": 0.5,
+          "memory_per_env_mb": 0.125,
+          "success_count": 4,
+          "all_success": true
+        },
+        {
+          "num_environments": 8,
+          "duration_seconds": 4.152315100014675,
+          "memory_used_mb": 0.6796875,
+          "memory_per_env_mb": 0.0849609375,
+          "success_count": 8,
+          "all_success": true
+        }
+      ],
+      "timestamp": "2025-10-04T17:38:56.478600"
+    },
+    {
+      "test_number": 5,
+      "test_name": "Scalability Test",
+      "passed": false,
+      "results": [
+        {
+          "duration_label": "1 Week",
+          "steps": 672,
+          "completed_steps": 96,
+          "duration_seconds": 0.48724480002420023,
+          "memory_used_mb": 0.0,
+          "success": false
+        },
+        {
+          "duration_label": "2 Weeks",
+          "steps": 1344,
+          "completed_steps": 96,
+          "duration_seconds": 0.48571280000032857,
+          "memory_used_mb": 0.0,
+          "success": false
+        },
+        {
+          "duration_label": "1 Month",
+          "steps": 2880,
+          "completed_steps": 96,
+          "duration_seconds": 0.48911650001537055,
+          "memory_used_mb": 0.0,
+          "success": false
+        }
+      ],
+      "timestamp": "2025-10-04T17:38:57.948405"
+    }
+  ]
+}
