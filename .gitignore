@@ -1,0 +1,10 @@
+# Ignore environment secrets
+.env
+
+# Node / Python / build artifacts (extend as needed)
+node_modules/
+__pycache__/
+*.pyc
+.dist/
+build/
+.cache/

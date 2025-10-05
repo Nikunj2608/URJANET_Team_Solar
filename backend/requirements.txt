@@ -1,0 +1,10 @@
+fastapi==0.111.0
+uvicorn[standard]==0.30.1
+SQLAlchemy==2.0.30  # Alembic-less simple migration note
+psycopg2-binary==2.9.9
+paho-mqtt==1.6.1
+python-dotenv==1.0.1
+orjson==3.10.7
+anyio==4.4.0
+prometheus-client==0.20.0
+httpx==0.28.1

@@ -1,0 +1,121 @@
+version: '3.8'
+
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2.0
+    container_name: mosquitto
+    restart: unless-stopped
+    ports:
+      - "11883:1883"
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+    networks:
+      - iotnet
+
+  db:
+    image: timescale/timescaledb:latest-pg15
+    container_name: timescale
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: iot
+      POSTGRES_PASSWORD: iotpass
+      POSTGRES_DB: iotdb
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - iotnet
+
+  rl-agent:
+    build: ./RRL_PPO-main
+    image: rl-agent-test
+    container_name: rl-agent
+    restart: unless-stopped
+    expose:
+      - "8001"
+    networks:
+      - iotnet
+    ports:
+      - "18001:8001"
+
+  backend:
+    build: ./backend
+    container_name: backend
+    restart: unless-stopped
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: iot
+      DB_PASSWORD: iotpass
+      DB_NAME: iotdb
+      MQTT_BROKER_HOST: mosquitto
+      MQTT_BROKER_PORT: 1883
+      DEFAULT_DEVICE_ID: 11111111-1111-1111-1111-111111111111
+      LOG_LEVEL: INFO
+      RL_AGENT_URL: http://rl-agent:8001/get-action
+      # --- Email Alerts ---
+      SMTP_HOST: mailhog
+      SMTP_PORT: 1025
+      SMTP_USER: ""
+      SMTP_PASSWORD: ""
+      SMTP_STARTTLS: "false"
+      ALERT_EMAIL_FROM: "UrjaNet Alerts <alerts@urjanet.local>"
+      ALERT_EMAIL_RECIPIENTS: "nikunjbhatt244@gmail.com,abhihraval@gmail.com,yashdoza21@gmail.com"
+      ALERT_EMAIL_COOLDOWN_SECONDS: 300
+      # --- Gemini AI (do NOT commit real key; place in .env file) ---
+      # Updated to currently available model; 1.5-flash deprecated/unavailable
+      GEMINI_MODEL: gemini-2.5-flash
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      # Optional: stub fallback if remote Gemini fails
+      GEMINI_FALLBACK: ${GEMINI_FALLBACK}
+    depends_on:
+      - db
+      - mosquitto
+      - rl-agent
+      - mailhog
+    ports:
+      - "18000:8000"
+    networks:
+      - iotnet
+    volumes:
+      - ./backend/app:/app/app:ro
+
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    restart: unless-stopped
+    environment:
+      - VITE_BACKEND_URL=http://localhost:18000
+    depends_on:
+      - backend
+    networks:
+      - iotnet
+    ports:
+      - "15173:5173"
+
+  simulator:
+    build: ./scripts/sim
+    container_name: simulator
+    environment:
+      MQTT_BROKER_HOST: mosquitto
+      MQTT_BROKER_PORT: 1883
+      DEVICE_ID: 11111111-1111-1111-1111-111111111111
+      BACKEND_HTTP_URL: http://backend:8000
+    depends_on:
+      - mosquitto
+      - backend
+    networks:
+      - iotnet
+    command: ["python", "device_sim.py"]
+  mailhog:
+    image: mailhog/mailhog:latest
+    restart: always
+    ports:
+      - "1025:1025"  # Local SMTP server port for your app to connect to
+      - "8025:8025"  # Web UI to view the emails
+
+networks:
+  iotnet:
+    driver: bridge
+
+volumes:
+  db_data:
